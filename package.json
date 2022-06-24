@@ -4,7 +4,7 @@
   "description": "A Node.js backend for socket.io chatbox ",
   "main": "server.js",
   "scripts": {
-    "test": "npm start",
+    "test": "npm run dev",
     "dev": "ts-node-dev --respawn --transpile-only server.ts"
   },
   "author": "",
