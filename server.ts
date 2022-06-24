@@ -29,21 +29,36 @@ const port = 3000;
 const io = new SocketIoServer(server);
 
 io.on('connection', (socket: Socket) => {
+
     console.log("incoming socket connection, id:", socket.id);
 
-    socket.emit("handshake", "Welcome!");
-
-    socket.on('handshake', (data) => {
-        console.log("handshake from client: ", data)
-    });
 
     socket.on('user-name', (name) => {
         console.log("user ", name, "joined chat !");
     });
 
+
+
+    // The user requests to join a certain room
+    socket.on('join-chat-room', (room_id) => {
+        console.log("user", socket.handshake.auth.name, "joined chatroom:", room_id);
+        socket.join(room_id);
+
+        socket.on('room-chat-message', (message) => {
+            console.log("user", socket.handshake.auth.name, "sent room-chat-message:", message)
+            
+            io.to(room_id).emit("room-chat-message", {
+                name: socket.handshake.auth.name,
+                message
+            });
+        })
+    });
+
+
+
     socket.on('public-chat-msg', (msg) => {
-        console.log("public-chat-msg",msg);
-        console.log("user ", JSON.parse(msg).name, "said:",JSON.parse(msg).message);
+        console.log("public-chat-msg", msg);
+        console.log("user ", JSON.parse(msg).name, "said:", JSON.parse(msg).message);
         io.sockets.emit('public-chat-msg', msg);
     });
 
@@ -55,6 +70,7 @@ io.on('connection', (socket: Socket) => {
 app.get('/', (req: Request, res: Response) => {
     res.json({ data: 'hello world' });
 });
+
 server.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
